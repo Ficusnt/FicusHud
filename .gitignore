@@ -3,8 +3,11 @@ Source/bin/
 Source/obj/
 bin/
 obj/
+dll/
 
 # IDE / user cruft
 .vs/
 *.user
 *.suo
+dist/
+*.zip
