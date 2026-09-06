@@ -1,0 +1,90 @@
+<FicusHUD>
+
+    <!--
+        FicusHUD | controls.xml
+        Author: Ficus
+
+        Defines reusable XUi control templates referenced in windows.xml.
+
+        ficus_buff_entry:
+            Scaled-down active buff row for the HUD buff list.
+            Used inside a grid with controller="ActiveBuffList".
+            Parameterized via ${width} and ${height} template vars.
+            controller="ActiveBuffEntry" (vanilla) provides all bindings.
+
+        ficus_party_entry:
+            Compact party/companion health bar row.
+            Used inside grids with controller="PartyEntryList" /
+            CompanionEntryList. controller="PartyEntry" (vanilla).
+            NOTE: NCalc on {healthfill} / {arrowcolor} is safe here —
+            these are vanilla float bindings, not custom string bindings.
+    -->
+
+    <append xpath="/controls">
+
+        <!-- ═══════════════════════════════════════════════════════
+             PARTY MEMBER ROW ENTRY
+
+             Bindings provided by controller="PartyEntry":
+               {partyvisible}      — show/hide entry
+               {name}              — player name
+               {arrowcolor}        — unique party member color
+               {showarrow}         — show direction arrow
+               {healthfill}        — HP fill 0.0-1.0
+               {healthmodifiedmax} — wounded max fill 0.0-1.0
+               {distance}          — "5.2m" string
+               {distancecolor}     — dim/bright by proximity
+
+             Usage: <ficus_party_entry width="200" height="40" />
+             ═══════════════════════════════════════════════════════ -->
+        <ficus_party_entry width="200" height="40">
+            <rect width="${width}" height="${height}"
+                  controller="PartyEntry"
+                  visible="{partyvisible}"
+                  default_health_color="200,200,200,255">
+
+                <!-- background -->
+                <sprite depth="1" pos="0,0" width="${width}" height="${height}"
+                        sprite="menu_empty" color="0,0,0,82" type="sliced" />
+
+                <!-- direction + distance column (38px) -->
+                <rect name="dir_block" pos="0,0" width="38" height="${height}">
+                    <sprite depth="1" pos="0,0" width="38" height="${height}"
+                            sprite="menu_empty" color="0,0,0,60" type="sliced" />
+                    <label depth="2" pos="19,-5" width="38" height="14"
+                           font_size="14" color="{distancecolor}"
+                           text="{distance}" justify="center" pivot="center" />
+                    <sprite depth="2" name="arrowContent"
+                            pos="19,-${Floor(height*0.67)}" size="14,14"
+                            sprite="ui_game_symbol_map_player_arrow"
+                            pivot="center" color="{arrowcolor}" visible="{showarrow}" />
+                </rect>
+
+                <!-- party color accent strip -->
+                <sprite depth="2" pos="38,0" width="3" height="${height}"
+                        sprite="menu_empty" color="{arrowcolor}" type="sliced" />
+
+                <!-- name + HP bar body -->
+                <rect name="body" pos="44,-3" width="${Floor(width)-48}" height="${Floor(height)-6}">
+                    <label depth="2" name="TextContent"
+                           pos="0,-1" width="${Floor(width)-48}" height="18"
+                           font_size="18" color="{arrowcolor}"
+                           text="{name}" justify="left" overflow="ShrinkContent" />
+                    <rect depth="2" pos="0,-22" width="${Floor(width)-48}" height="7">
+                        <filledsprite depth="1" name="BarHealthModifiedMax"
+                                      pos="0,0" sprite="menu_empty"
+                                      color="55,55,55,255"
+                                      fill="{healthmodifiedmax}" />
+                        <filledsprite depth="2" name="BarHealth"
+                                      pos="0,0" sprite="menu_empty"
+                                      color="{# healthfill &lt; 0.4 ? '200,40,40,255' : (healthfill &lt; 0.65 ? '200,160,0,255' : '200,200,200,255') }"
+                                      fill="{healthfill}" />
+                    </rect>
+                </rect>
+
+            </rect>
+        </ficus_party_entry>
+
+    </append>
+
+</FicusHUD>

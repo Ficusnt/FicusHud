@@ -1,0 +1,34 @@
+<FicusHUD>
+
+    <!--
+        FicusHUD | xui.xml
+        Author: Ficus
+        
+        Registers FicusHUD windows into the correct vanilla window groups.
+        
+        Windows that need explicit registration (new, not in vanilla xui.xml):
+          ficusHUDVitals  — bottom-center vitals, lives alongside the toolbelt
+          ficusItemWidget — bottom-right active item, replaces vanilla ActiveItem slot
+        
+        Windows that DON'T need registration here (vanilla groups still own them,
+        we only reposition them in windows.xml via setattribute/remove/append):
+          windowCompass, windowLocation, windowTargetBar,
+          windowQuestTracker, windowRecipeTracker, windowGroupBars
+    -->
+
+    <!-- Anchor HUDLeftStatBars to LeftTop (our InfoPanel window) -->
+    <setattribute xpath="//window_group[@name='toolbelt']/window[@name='HUDLeftStatBars']"
+                  name="anchor">LeftTop</setattribute>
+
+    <!-- Anchor windowGroupBars to LeftTop (we reposition it in windows.xml) -->
+    <setattribute xpath="//window_group[@name='toolbelt']/window[@name='windowGroupBars']"
+                  name="anchor">LeftTop</setattribute>
+
+    <!-- Register ficusHUDVitals and ficusItemWidget in the toolbelt group
+         so they open/close with the game HUD -->
+    <append xpath="//ruleset/window_group[@name='toolbelt']">
+        <window name="ficusHUDVitals"  anchor="CenterBottom" />
+        <window name="ficusItemWidget" anchor="RightBottom"  />
+    </append>
+
+</FicusHUD>

@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HUD Wireframe v2</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body { margin: 0; padding: 0; background: #111; }
+  body { font-family: 'Courier New', monospace; background: #111; padding: 20px; overflow: auto; }
+
+  .canvas { position: relative; width: 1280px; height: 720px; overflow: hidden; border: 2px solid #444; background: #1a1a1a; }
+  .game-bg { position: absolute; inset: 0; background: linear-gradient(180deg, #3a4a5a 0%, #5a6a4a 60%, #4a5a3a 100%); opacity: 0.55; }
+  .crosshair { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); color: rgba(255,255,255,0.6); font-size: 20px; pointer-events: none; }
+
+  :root {
+    --accent: rgba(200,180,130,0.9);
+    --label:  rgba(160,145,110,0.65);
+    --text:   rgba(220,210,190,0.95);
+    --dim:    rgba(120,110,85,0.6);
+    --hp:    #a03030;
+    --sp:    #2e6aa0;
+    --food:  #6B8B2A;
+    --water: #2A6B8B;
+  }
+
+  .lbl { font-size: 8px; color: var(--label); text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ════ TOP LEFT ════ */
+  .tl { position: absolute; top: 10px; left: 10px; display: flex; flex-direction: column; gap: 6px; }
+  .tl-top { display: flex; align-items: center; gap: 9px; }
+
+  .day-wrap { position: relative; width: 62px; height: 62px; flex-shrink: 0; }
+  .day-wrap svg { position: absolute; top: 0; left: 0; width: 62px; height: 62px; }
+  .day-inner {
+    position: absolute; inset: 6px; border-radius: 50%;
+    background: rgba(0,0,0,0.55);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+  }
+  .day-inner .dlbl { font-size: 7px; color: var(--label); text-transform: uppercase; letter-spacing: 1px; }
+  .day-inner .dnum { font-size: 19px; font-weight: bold; color: var(--text); line-height: 1; text-shadow: 0 0 8px rgba(200,180,130,0.4); }
+
+  .astrolabe { display: flex; flex-direction: column; gap: 3px; min-width: 152px; }
+  .astro-namerow { display: flex; justify-content: space-between; align-items: baseline; gap: 9px; }
+  .astro-namerow .lvl   { font-size: 10px; color: var(--accent); }
+  .astro-namerow .pname { font-size: 10px; color: var(--text); }
+
+  .day-notch-row {
+    display: flex; align-items: center; gap: 3px; padding: 2px 0;
+    border-top: 1px solid rgba(180,160,120,0.15);
+    border-bottom: 1px solid rgba(180,160,120,0.15);
+  }
+  .notch { display: flex; flex-direction: column; align-items: center; gap: 1px; flex: 1; }
+  .notch-tick { width: 1px; height: 6px; background: rgba(180,160,120,0.25); }
+  .notch.current .notch-tick { background: var(--accent); width: 2px; height: 8px; }
+  .notch-num { font-size: 7px; color: var(--dim); }
+  .notch.current .notch-num { color: var(--text); }
+  .notch.bm .notch-tick { background: rgba(160,48,48,0.5); }
+  .notch.bm .notch-num  { color: rgba(160,48,48,0.8); }
+  .notch.bm-current .notch-tick { background: #a03030; width: 2px; height: 8px; }
+  .notch.bm-current .notch-num  { color: #dd4444; }
+
+  .astro-stats { display: flex; align-items: center; width: 100%; }
+  .astro-stat  { display: flex; flex-direction: column; }
+  .astro-stat .val { font-size: 10px; color: var(--text); }
+  .astro-stat.hour { margin-right: auto; }
+  .astro-stat.gs   { margin-right: 9px; }
+
+
+
+  .buff-list { display: flex; flex-direction: column; gap: 2px; }
+  .buff-entry {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(0,0,0,0.28); padding: 3px 6px;
+  }
+  .buff-icon   { width: 10px; height: 10px; border-radius: 1px; flex-shrink: 0; opacity: 0.85; }
+  .buff-name   { font-size: 9px; color: var(--text); flex: 1; }
+  .buff-detail { font-size: 8px; color: var(--dim); }
+
+  /* ════ SURVIVAL — inside .bc, right edge flush with hotbar left, extends leftward ════ */
+  .surv-block {
+    position: absolute;
+    bottom: 0; /* aligns with hotbar bottom */
+    right: 100%; /* sits just left of .bc */
+    margin-right: 6px;
+    display: flex; flex-direction: column; gap: 5px;
+    align-items: flex-end;
+    padding-bottom: 6px; /* lift to roughly hotbar icon level */
+  }
+  /* each row: val on far left, bar in middle, icon on right (anchored side) */
+  .surv-row   { display: flex; align-items: center; gap: 4px; }
+  .surv-icon  { font-size: 10px; color: var(--accent); width: 13px; text-align: center; }
+  .surv-bar   { display: flex; gap: 2px; } /* filled segs right, empty left = depletes leftward */
+  .sseg       { width: 11px; height: 6px; }
+  .surv-val   { font-size: 8px; color: var(--dim); white-space: nowrap; }
+
+  /* ════ BOTTOM CENTER ════ */
+  .bc {
+    position: absolute; bottom: 8px;
+    left: 50%; transform: translateX(-50%);
+    display: flex; flex-direction: column; align-items: center; gap: 0;
+    overflow: visible;
+  }
+
+  /* vital-row: HP | storm | SP, sits above hotbar */
+  .vital-row {
+    display: flex; align-items: flex-end; gap: 0;
+    width: 100%; margin-bottom: 4px;
+  }
+
+  .vital-col { display: flex; flex-direction: column; flex: 1; }
+  .vital-col.hp { align-items: flex-start; margin-right: 6px; }
+  .vital-col.sp { align-items: flex-end;   margin-left:  6px; }
+
+  /* bar wrapper: relative so label can sit inside */
+  .vseg-bar {
+    position: relative; width: 100%; height: 13px;
+    /* fake segments via repeating gradient */
+    --seg-w: 14px; --gap: 2px;
+  }
+  /* HP: filled from left, empty to right */
+  .vital-col.hp .vseg-bar {
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: rgba(160,48,48,0.15);
+  }
+  .vital-col.hp .vseg-bar::before {
+    content:''; position:absolute; top:0; left:0; bottom:0;
+    width: var(--fill, 68%); /* set inline for actual fill % */
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: var(--hp);
+  }
+  /* SP: filled from right, empty to left */
+  .vital-col.sp .vseg-bar {
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: rgba(46,106,160,0.15);
+  }
+  .vital-col.sp .vseg-bar::before {
+    content:''; position:absolute; top:0; right:0; bottom:0;
+    width: var(--fill, 98%);
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: var(--sp);
+  }
+
+  /* remove old vseg divs — they're now invisible but still in HTML, hide them */
+  .vseg { display: none; }
+
+  /* label inside the bar at the depleting end */
+  .vital-lbl {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 8px; color: rgba(255,255,255,0.9);
+    white-space: nowrap; pointer-events: none; z-index: 1;
+    text-shadow: 0 0 4px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,1);
+  }
+  .vital-col.hp .vital-lbl { left:  3px; }  /* HP anchor left, number left */
+  .vital-col.sp .vital-lbl { right: 3px; }  /* SP anchor right, number right */
+
+  /* Survival bars — same gradient trick */
+  .surv-bar {
+    position: relative; height: 13px; width: 90px;
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent 9px,
+        rgba(0,0,0,0.4) 9px, rgba(0,0,0,0.4) 11px
+      );
+  }
+  .surv-bar::before {
+    content:''; position:absolute; top:0; right:0; bottom:0;
+    width: var(--fill, 60%);
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent 9px,
+        rgba(0,0,0,0.4) 9px, rgba(0,0,0,0.4) 11px
+      );
+    background-color: var(--bar-color, var(--food));
+  }
+  .sseg { display: none; } /* replaced by gradient */
+  .surv-val {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    right: 3px; font-size: 8px; color: rgba(255,255,255,0.85);
+    text-shadow: 0 0 4px rgba(0,0,0,1); pointer-events: none; z-index:1;
+    white-space: nowrap;
+  }
+
+  /* Survival mini bars — above HP and SP */
+  .surv-mini-bar {
+    position: relative; width: 50%; height: 7px;
+    --seg-w: 14px; --gap: 2px;
+    margin-bottom: 3px;
+  }
+  .surv-mini-lbl {
+    position: absolute; top: 50%; transform: translateY(-50%);
+    font-size: 6px; color: rgba(255,255,255,0.85);
+    white-space: nowrap; pointer-events: none; z-index: 1;
+    text-shadow: 0 0 4px rgba(0,0,0,1), 0 0 2px rgba(0,0,0,1);
+  }
+  .vital-col.hp .surv-mini-lbl { left:  2px; }
+  .vital-col.sp .surv-mini-lbl { right: 2px; }
+  .vital-col.hp .surv-mini-bar {
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: rgba(107,139,42,0.12);
+  }
+  .vital-col.hp .surv-mini-bar::before {
+    content:''; position:absolute; top:0; left:0; bottom:0;
+    width: var(--fill, 68%);
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: var(--food);
+  }
+  .vital-col.sp .surv-mini-bar {
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: rgba(42,107,139,0.12);
+  }
+  .vital-col.sp .surv-mini-bar::before {
+    content:''; position:absolute; top:0; right:0; bottom:0;
+    width: var(--fill, 48%);
+    background:
+      repeating-linear-gradient(90deg,
+        transparent 0, transparent calc(var(--seg-w) - var(--gap)),
+        rgba(0,0,0,0.4) calc(var(--seg-w) - var(--gap)), rgba(0,0,0,0.4) var(--seg-w)
+      );
+    background-color: var(--water);
+  }
+
+  /* Storm widget */
+  .storm-widget { display: flex; flex-direction: column; align-items: center; padding-bottom: 3px; flex-shrink: 0; align-self: flex-end; margin-bottom: -2px; }
+  .storm-semi   { position: relative; width: 70px; height: 44px; overflow: visible; }
+  .storm-semi svg { position: absolute; bottom: 0; left: 0; }
+  .storm-icon   { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 15px; color: rgba(200,120,50,0.9); line-height: 1; }
+  .storm-timer  { font-size: 8px; color: rgba(200,120,50,0.8); text-align: center; margin-top: 1px; letter-spacing: 1px; }
+
+  /* Hotbar */
+  .hotbar { display: flex; gap: 0; background: rgba(0,0,0,0.35); padding: 3px 4px 0 4px; }
+  .slot {
+    width: 51px;
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; padding: 3px 2px 0 2px;
+    border: 1px solid transparent;
+  }
+  .slot.active { border-color: rgba(200,180,130,0.5); background: rgba(200,180,130,0.06); }
+  .slot-icon   { width: 33px; height: 33px; background: rgba(255,255,255,0.04); border: 1px solid rgba(180,160,120,0.15); }
+  .slot-count  { position: absolute; top: 4px; right: 4px; font-size: 8px; color: var(--text); }
+  .slot-dur    { width: 100%; height: 2px; background: rgba(180,160,120,0.08); margin-top: 2px; }
+  .slot-dur-fill { height: 100%; }
+  .slot-num    { font-size: 8px; color: var(--dim); margin-top: 1px; margin-bottom: 2px; }
+
+  /* ════ TOP CENTER ════ */
+  .tc { position: absolute; top: 8px; left: 50%; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 1px; min-width: 330px; }
+  .compass-row { display: flex; align-items: stretch; width: 100%; }
+  .compass-bar { background: rgba(0,0,0,0.25); padding: 3px 11px; display: flex; gap: 6px; align-items: center; justify-content: center; flex: 1; }
+  .compass-bar span   { font-size: 9px; color: var(--dim); }
+  .compass-bar .ccard { color: var(--accent); font-weight: bold; font-size: 10px; }
+  .compass-bar .cactive { color: #fff; font-size: 11px; font-weight: bold; border-bottom: 1px solid var(--accent); }
+  .side-stat { background: rgba(0,0,0,0.25); padding: 2px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; flex-shrink: 0; }
+  .side-stat .val { font-size: 9px; color: var(--text); }
+  .loc-bar    { display: flex; flex-direction: column; align-items: center; gap: 1px; width: 100%; }
+  .loc-name   { font-size: 11px; color: var(--text); font-weight: bold; }
+  .loc-skulls { display: flex; gap: 2px; justify-content: center; }
+  .skull-on   { font-size: 9px; color: #a03030; }
+  .skull-off  { font-size: 9px; color: var(--dim); }
+  .target-block { display: flex; flex-direction: column; align-items: center; gap: 3px; width: 100%; padding-top: 4px; }
+  .target-name  { font-size: 10px; color: var(--text); }
+  .target-bar-bg  { height: 6px; width: 100%; background: rgba(0,0,0,0.4); }
+  .target-bar-fill { height: 100%; width: 65%; background: var(--hp); }
+  .target-buffs { display: flex; gap: 2px; }
+  .tbuff { width: 9px; height: 9px; border-radius: 1px; opacity: 0.8; }
+
+  /* ════ TOP RIGHT ════ */
+  .tr { position: absolute; top: 10px; right: 10px; min-width: 190px; }
+  .quest-block { background: rgba(0,0,0,0.3); padding: 6px 9px; }
+  .quest-title { font-size: 9px; color: var(--accent); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px; }
+  .quest-step  { display: flex; align-items: center; gap: 6px; margin-bottom: 3px; }
+  .qcheck.done { font-size: 9px; color: #4a9a4a; }
+  .qcheck.todo { font-size: 9px; color: var(--dim); }
+  .qtext  { font-size: 9px; color: var(--text); flex: 1; }
+  .qcount { font-size: 8px; color: var(--dim); }
+
+  /* ════ BOTTOM RIGHT ════ */
+  .br { position: absolute; bottom: 8px; right: 10px; display: flex; flex-direction: column; align-items: flex-end; gap: 5px; }
+  .inv-block  { display: flex; align-items: center; gap: 6px; }
+  .inv-count  { font-size: 11px; color: var(--text); font-weight: bold; }
+
+  /* Item widget — CATUI style */
+  .item-widget { width: 210px; }
+  .item-bg {
+    position: relative;
+    width: 100%; height: 80px;
+    background: rgba(0,0,0,0.35); /* lighter, like hotbar */
+    overflow: hidden;
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 0 0 4px 0;
+  }
+
+  /* icon: right side, big, slightly cropped */
+  .item-icon-area {
+    position: absolute; right: -4px; top: -4px;
+    width: 90px; height: 90px;
+    display: flex; align-items: center; justify-content: center;
+    opacity: 0.85;
+  }
+  .item-icon-placeholder {
+    font-size: 52px; line-height: 1;
+    filter: drop-shadow(0 2px 6px rgba(0,0,0,0.8));
+  }
+
+  /* ammo row — top left */
+  .item-ammo-row {
+    position: absolute; top: 6px; left: 8px;
+    display: flex; align-items: baseline; gap: 4px;
+  }
+  .item-ammo-cur  { font-size: 26px; font-weight: bold; color: var(--text); line-height: 1; text-shadow: 0 0 8px rgba(0,0,0,1); }
+  .item-ammo-sep  { font-size: 11px; color: var(--dim); }
+  .item-ammo-icon { font-size: 11px; }
+
+  /* name bar — stays dark */
+  .item-name-bar {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(0,0,0,0.5);
+    padding: 2px 6px 2px 4px;
+    margin-bottom: 2px;
+  }
+  .item-accent { width: 3px; height: 14px; flex-shrink: 0; }
+  .item-name   { font-size: 10px; color: var(--text); font-weight: bold; }
+
+  /* dur bar — tier color as background tint, fits content */
+  .item-dur-bar {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 2px 8px 2px 5px;
+    align-self: flex-start;
+    background: var(--tier-color, rgba(180,180,180,0.12));
+  }
+  .item-dur-icon { font-size: 9px; color: var(--dim); }
+  .item-dur-num  { font-size: 10px; font-weight: bold; }
+
+  /* ════ PARTY ════ */
+  .party { position: absolute; bottom: 8px; left: 10px; display: flex; flex-direction: column-reverse; gap: 3px; }
+  .party-member { display: flex; align-items: stretch; background: rgba(0,0,0,0.32); min-width: 160px; }
+  .party-body   { display: flex; flex-direction: column; gap: 2px; padding: 3px 5px; flex: 1; }
+  .party-namerow { display: flex; align-items: center; }
+  .party-name   { font-size: 9px; font-weight: bold; }
+  .party-dist   { font-size: 7px; color: var(--dim); margin-left: auto; }
+  .party-hpbar  { display: flex; gap: 2px; }
+  .pseg         { width: 12px; height: 4px; }
+  .party-dir    { width: 24px; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.25); flex-shrink: 0; }
+  .party-arrow  { font-size: 10px; }
+
+
+</style>
+</head>
+<body>
+
+<div class="canvas">
+
+<div class="game-bg"></div>
+<div class="crosshair">+</div>
+
+<!-- TOP LEFT -->
+<div class="tl">
+  <div class="tl-top">
+    <div class="day-wrap">
+      <svg viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="24" stroke="rgba(180,160,120,0.12)" stroke-width="3"/>
+        <circle cx="28" cy="28" r="24"
+          stroke="rgba(180,160,120,0.7)" stroke-width="3"
+          stroke-dasharray="90 151" stroke-dashoffset="0"
+          stroke-linecap="butt" transform="rotate(-90 28 28)"/>
+      </svg>
+      <div class="day-inner">
+        <span class="dlbl">Day</span>
+        <span class="dnum">7</span>
+      </div>
+    </div>
+
+    <div class="astrolabe">
+      <div class="astro-namerow">
+        <span class="lvl">Lv. 36</span>
+        <span class="pname">snaketears</span>
+      </div>
+
+      <!-- Day notch track: 7 days, day 7 = current, day 7 = BM -->
+      <div class="day-notch-row">
+        <div class="notch"><div class="notch-tick"></div><span class="notch-num">1</span></div>
+        <div class="notch"><div class="notch-tick"></div><span class="notch-num">2</span></div>
+        <div class="notch"><div class="notch-tick"></div><span class="notch-num">3</span></div>
+        <div class="notch"><div class="notch-tick"></div><span class="notch-num">4</span></div>
+        <div class="notch"><div class="notch-tick"></div><span class="notch-num">5</span></div>
+        <div class="notch"><div class="notch-tick"></div><span class="notch-num">6</span></div>
+        <!-- Day 7: current AND bloodmoon — red moon icon instead of number -->
+        <div class="notch bm-current">
+          <div class="notch-tick"></div>
+          <span class="notch-num" style="font-size:8px;line-height:1;">🌕</span>
+        </div>
+      </div>
+
+      <div class="astro-stats">
+        <div class="astro-stat hour"><span class="lbl">Hour</span><span class="val">11:34</span></div>
+        <div class="astro-stat gs"><span class="lbl">GS</span><span class="val">147</span></div>
+        <div class="astro-stat ls"><span class="lbl">LS</span><span class="val">198</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="buff-list">
+    <div class="buff-entry">
+      <div class="buff-icon" style="background:rgba(139,42,42,0.3);"></div>
+      <span class="buff-name">Bleeding</span>
+      <span class="buff-detail">12s · -2hp/s</span>
+    </div>
+    <div class="buff-entry">
+      <div class="buff-icon" style="background:rgba(107,139,42,0.3);"></div>
+      <span class="buff-name">Well Fed</span>
+      <span class="buff-detail">+10% · 5m</span>
+    </div>
+    <div class="buff-entry">
+      <div class="buff-icon" style="background:rgba(42,107,139,0.3);"></div>
+      <span class="buff-name">Hydrated</span>
+      <span class="buff-detail">+5% · 3m</span>
+    </div>
+  </div>
+</div>
+
+
+<!-- TOP CENTER -->
+<div class="tc">
+  <div class="compass-row">
+    <div class="side-stat elev">
+      <span class="lbl">Elev</span>
+      <span class="val">42m</span>
+    </div>
+    <div class="compass-bar">
+      <span>55</span><span>·</span>
+      <span class="ccard">E</span><span>·</span>
+      <span>75</span><span>·</span>
+      <span class="cactive">SE</span>
+      <span>·</span><span>95</span><span>·</span>
+      <span class="ccard">S</span><span>·</span><span>115</span>
+    </div>
+    <div class="side-stat temp">
+      <span class="lbl">Temp</span>
+      <span class="val">16°C</span>
+    </div>
+  </div>
+  <div class="loc-bar">
+    <span class="loc-name">U.S. Army Post #7</span>
+    <div class="loc-skulls">
+      <span class="skull-on">☠</span>
+      <span class="skull-on">☠</span>
+      <span class="skull-on">☠</span>
+      <span class="skull-off">☠</span>
+      <span class="skull-off">☠</span>
+    </div>
+  </div>
+  <div class="target-block">
+    <div class="target-name">Feral Zombie</div>
+    <div class="target-bar-bg"><div class="target-bar-fill"></div></div>
+    <div class="target-buffs">
+      <div class="tbuff" style="background:rgba(139,42,42,0.3);"></div>
+      <div class="tbuff" style="background:rgba(139,107,42,0.3);"></div>
+      <div class="tbuff"></div>
+    </div>
+  </div>
+</div>
+
+<!-- TOP RIGHT -->
+<div class="tr">
+  <div class="quest-block">
+    <div class="quest-title">Tutorial Challenge</div>
+    <div class="quest-step">
+      <span class="qcheck done">✓</span>
+      <span class="qtext">Craft Stone Axe</span>
+      <span class="qcount">1/1</span>
+    </div>
+    <div class="quest-step">
+      <span class="qcheck todo">○</span>
+      <span class="qtext">Place Bedroll</span>
+      <span class="qcount">0/1</span>
+    </div>
+    <div class="quest-step">
+      <span class="qcheck todo">○</span>
+      <span class="qtext">Kill 5 Zombies</span>
+      <span class="qcount">2/5</span>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM CENTER -->
+<div class="bc">
+
+  <div class="vital-row">
+
+    <!-- HP col: hunger mini-bar above, then HP bar -->
+    <div class="vital-col hp">
+      <div class="surv-mini-bar" style="--fill:68%;"><span class="surv-mini-lbl">136/200</span></div>
+      <div class="vseg-bar" style="--fill:68%;">
+        <div class="vseg hpf"></div><div class="vseg hpf"></div>
+        <div class="vseg hpf"></div><div class="vseg hpf"></div>
+        <div class="vseg hp-empty"></div><div class="vseg hp-empty"></div>
+        <div class="vseg hp-empty"></div><div class="vseg hp-empty"></div>
+        <span class="vital-lbl">136/200</span>
+      </div>
+    </div>
+
+    <!-- Storm semicircle -->
+    <div class="storm-widget">
+      <div class="storm-semi">
+        <svg width="64" height="36" viewBox="0 0 64 36">
+          <path d="M 6 35 A 26 26 0 0 1 58 35"
+            fill="none" stroke="rgba(180,100,50,0.15)"
+            stroke-width="5" stroke-linecap="butt"/>
+          <path d="M 6 35 A 26 26 0 0 1 58 35"
+            fill="none" stroke="rgba(180,100,50,0.72)"
+            stroke-width="5" stroke-linecap="butt"
+            stroke-dasharray="45 82"/>
+        </svg>
+        <span class="storm-icon">⛈</span>
+      </div>
+      <span class="storm-timer">12m</span>
+    </div>
+
+    <!-- SP col: thirst mini-bar above, then SP bar -->
+    <div class="vital-col sp">
+      <div class="surv-mini-bar" style="--fill:48%;"><span class="surv-mini-lbl">96/200</span></div>
+      <div class="vseg-bar" style="--fill:98%;">
+        <div class="vseg spf"></div><div class="vseg spf"></div>
+        <div class="vseg spf"></div><div class="vseg spf"></div>
+        <div class="vseg spf"></div><div class="vseg spf"></div>
+        <div class="vseg spf"></div>
+        <div class="vseg sp-empty"></div>
+        <span class="vital-lbl">196/200</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Hotbar — no surv-inline anymore -->
+  <div class="hotbar">
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"><div class="slot-dur-fill" style="width:80%;background:#6B8B2A;"></div></div>
+      <span class="slot-num">1</span>
+    </div>
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"><div class="slot-dur-fill" style="width:38%;background:#8B6B2A;"></div></div>
+      <span class="slot-num">2</span>
+    </div>
+    <div class="slot active">
+      <span class="slot-count">×15</span>
+      <div class="slot-icon"></div>
+      <div class="slot-dur" style="background:transparent;"></div>
+      <span class="slot-num">3</span>
+    </div>
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"><div class="slot-dur-fill" style="width:95%;background:#6B8B2A;"></div></div>
+      <span class="slot-num">4</span>
+    </div>
+    <div class="slot">
+      <span class="slot-count">×5</span>
+      <div class="slot-icon"></div>
+      <div class="slot-dur" style="background:transparent;"></div>
+      <span class="slot-num">5</span>
+    </div>
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"></div>
+      <span class="slot-num">6</span>
+    </div>
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"></div>
+      <span class="slot-num">7</span>
+    </div>
+    <div class="slot">
+      <span class="slot-count">×2</span>
+      <div class="slot-icon"></div>
+      <div class="slot-dur" style="background:transparent;"></div>
+      <span class="slot-num">8</span>
+    </div>
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"></div>
+      <span class="slot-num">9</span>
+    </div>
+    <div class="slot">
+      <div class="slot-icon"></div>
+      <div class="slot-dur"></div>
+      <span class="slot-num">0</span>
+    </div>
+  </div>
+</div>
+
+<!-- BOTTOM RIGHT -->
+<div class="br">
+  <div class="inv-block">
+    <span class="lbl">Free</span>
+    <span class="inv-count">14/36</span>
+  </div>
+
+  <!-- WEAPON WIDGET — gun state, grey = common tier -->
+  <div class="item-widget" style="--tier-color: rgba(180,180,180,0.18);">
+    <div class="item-bg">
+      <!-- icon placeholder, right side, oversized -->
+      <div class="item-icon-area">
+        <div class="item-icon-placeholder">🔫</div>
+      </div>
+      <!-- ammo row top left -->
+      <div class="item-ammo-row">
+        <span class="item-ammo-cur">15</span>
+        <span class="item-ammo-sep">/ 285</span>
+        <span class="item-ammo-icon">🔸</span>
+      </div>
+      <!-- name bar -->
+      <div class="item-name-bar">
+        <div class="item-accent" style="background:#c8c8c8;"></div>
+        <span class="item-name">Pistol</span>
+      </div>
+      <!-- dur bar -->
+      <div class="item-dur-bar">
+        <div class="item-accent" style="background:#c8c8c8;"></div>
+        <span class="item-dur-icon">⚙</span>
+        <span class="item-dur-num" style="color:#c8c8c8;">312</span>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- PARTY WIDGET — bottom left, grows upward -->
+<div class="party">
+
+  <div class="party-member">
+    <div class="party-dir"><span class="party-arrow" style="color:#cc88ff;">►</span></div>
+    <div class="party-body">
+      <div class="party-namerow">
+        <span class="party-name" style="color:#cc88ff;">Brody</span>
+        <span class="party-dist">5.2m</span>
+      </div>
+      <div class="party-hpbar">
+        <div class="pseg" style="background:rgba(200,200,200,0.7);"></div>
+        <div class="pseg" style="background:rgba(200,200,200,0.7);"></div>
+        <div class="pseg" style="background:rgba(200,200,200,0.7);"></div>
+        <div class="pseg" style="background:rgba(200,200,200,0.7);"></div>
+        <div class="pseg" style="background:rgba(200,200,200,0.7);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="party-member">
+    <div class="party-dir"><span class="party-arrow" style="color:#4488ff;">▼</span></div>
+    <div class="party-body">
+      <div class="party-namerow">
+        <span class="party-name" style="color:#4488ff;">Byron</span>
+        <span class="party-dist">5.9m</span>
+      </div>
+      <div class="party-hpbar">
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="party-member">
+    <div class="party-dir"><span class="party-arrow" style="color:#ff5555;">▲</span></div>
+    <div class="party-body">
+      <div class="party-namerow">
+        <span class="party-name" style="color:#ff5555;">Sally</span>
+        <span class="party-dist">4.6m</span>
+      </div>
+      <div class="party-hpbar">
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:#c8a800;"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="party-member">
+    <div class="party-dir"><span class="party-arrow" style="color:#44ddaa;">▲</span></div>
+    <div class="party-body">
+      <div class="party-namerow">
+        <span class="party-name" style="color:#44ddaa;">Ben</span>
+        <span class="party-dist">5.5m</span>
+      </div>
+      <div class="party-hpbar">
+        <div class="pseg" style="background:#cc2222;"></div>
+        <div class="pseg" style="background:#cc2222;"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+        <div class="pseg" style="background:rgba(30,30,30,0.5);"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</div><!-- /canvas -->
+</body>
+</html>

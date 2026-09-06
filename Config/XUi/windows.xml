@@ -1,0 +1,391 @@
+<FicusHUD>
+
+<!--
+    FicusHUD | windows.xml
+    Author: Ficus
+
+    Custom bindings from FicusHUD.XUiC_InfoPanel:
+        {ficus_worldday}             — current world day string
+        {ficus_worldhour}            — in-game time "HH:MM"
+        {ficus_playername}           — player entity name
+        {ficus_playerlevel}          — player level
+        {ficus_armorrating}          — physical armor rating integer
+        {ficus_playerspeed}          — speed modifier e.g. "1.23x"
+        {ficus_gamestage}            — game stage
+        {ficus_lootstage}            — loot stage (stubbed = GS)
+        {ficus_skillpoints}          — available skill points
+        {ficus_notchN_color}         — notch tick sprite color (N=1-7)
+        {ficus_notchN_lcolor}        — notch label color (N=1-7)
+        {ficus_activeItemName}       — STUB "" — needs dnSpy: ItemClass.GetLocalizedItemName()
+        {ficus_activeItemDurColor}   — STUB grey — needs dnSpy: holdingItem.UseTimes / MaxUseTimes
+
+    CVars set by DLL (float, read via {cvar(Name)} in XUi):
+        Ficus_xpFill            — STUB 0.5 — needs dnSpy: EntityPlayerProgressionSDCS Exp fields
+        Ficus_armorRating       — physical armor rating float
+        Ficus_playerSpeed       — movement speed modifier float
+        Ficus_playerGameStage   — game stage float
+        Ficus_playerLootStage   — loot stage float (= game stage for now)
+        Ficus_stormActive       — STUB 0 — needs WeatherManager API research
+        Ficus_stormTimer        — STUB 0 — needs WeatherManager API research
+-->
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TOP LEFT — Main Info Panel
+     Controller: FicusHUD.XUiC_InfoPanel provides all {ficus_*} bindings.
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<remove xpath="/windows/window[@name='HUDLeftStatBars']" />
+
+<append xpath="/windows">
+    <window name="HUDLeftStatBars" depth="2" anchor="LeftTop" pos="10,-10"
+            open_on_startup="true"
+            controller="FicusHUD.XUiC_InfoPanel, FicusHUD">
+
+        <!-- Background — only covers the fixed top section, not the buff list -->
+        <sprite depth="0" pos="0,0" width="290" height="100"
+                sprite="menu_empty" color="0,0,0,180" type="sliced" />
+
+        <!-- ─────────────────────────────────────────────────────────
+             ROW 1 — Day Circle + Astrolabe (90px tall total)
+             ───────────────────────────────────────────────────────── -->
+        <rect name="tl_top" pos="0,0" width="290" height="90">
+
+            <!-- Day circle — left side, 80px -->
+            <rect name="day_circle" pos="4,-5" width="80" height="80">
+                <sprite depth="1" width="80" height="80"
+                        sprite="menu_empty" color="0,0,0,160" type="sliced" />
+                <sprite depth="2" width="80" height="80"
+                        sprite="menu_empty3px" color="180,160,120,60"
+                        type="sliced" fillcenter="false" />
+                <label depth="3" pos="40,-14" pivot="center" font_size="20"
+                       color="160,145,110,200" text="DAY" justify="center" />
+                <label depth="3" pos="40,-50" pivot="center" font_size="38"
+                       color="220,210,190,255" text="{ficus_worldday}" justify="center" />
+            </rect>
+
+            <!-- Astrolabe block — right of circle -->
+            <rect name="astrolabe" pos="92,-3" width="194" height="90">
+
+                <!-- Level / Name row -->
+                <label pos="0,-4" width="80" font_size="22"
+                       color="200,180,130,230" text="Lv. {ficus_playerlevel}" justify="left" />
+                <label pos="194,-4" width="194" font_size="22"
+                       color="220,210,190,255" text="{ficus_playername}"
+                       justify="right" pivot="topright" overflow="ShrinkContent" />
+
+                <!-- 7-day notch track -->
+                <rect pos="0,-30" width="194" height="20">
+                    <sprite pos="0,-1"  width="194" height="1" color="180,160,120,40" type="sliced" />
+                    <sprite pos="0,-18" width="194" height="1" color="180,160,120,40" type="sliced" />
+                    <rect pos="0,-1"   width="27" height="16">
+                        <sprite depth="2" pos="13,-3" width="2" height="10" type="sliced" color="{ficus_notch1_color}" />
+                        <label  depth="3" pos="13,-14" font_size="18" pivot="center" justify="center" text="1" color="{ficus_notch1_lcolor}" />
+                    </rect>
+                    <rect pos="27,-1"  width="27" height="16">
+                        <sprite depth="2" pos="13,-3" width="2" height="10" type="sliced" color="{ficus_notch2_color}" />
+                        <label  depth="3" pos="13,-14" font_size="18" pivot="center" justify="center" text="2" color="{ficus_notch2_lcolor}" />
+                    </rect>
+                    <rect pos="54,-1"  width="28" height="16">
+                        <sprite depth="2" pos="14,-3" width="2" height="10" type="sliced" color="{ficus_notch3_color}" />
+                        <label  depth="3" pos="14,-14" font_size="18" pivot="center" justify="center" text="3" color="{ficus_notch3_lcolor}" />
+                    </rect>
+                    <rect pos="82,-1"  width="28" height="16">
+                        <sprite depth="2" pos="14,-3" width="2" height="10" type="sliced" color="{ficus_notch4_color}" />
+                        <label  depth="3" pos="14,-14" font_size="18" pivot="center" justify="center" text="4" color="{ficus_notch4_lcolor}" />
+                    </rect>
+                    <rect pos="110,-1" width="28" height="16">
+                        <sprite depth="2" pos="14,-3" width="2" height="10" type="sliced" color="{ficus_notch5_color}" />
+                        <label  depth="3" pos="14,-14" font_size="18" pivot="center" justify="center" text="5" color="{ficus_notch5_lcolor}" />
+                    </rect>
+                    <rect pos="138,-1" width="28" height="16">
+                        <sprite depth="2" pos="14,-3" width="2" height="10" type="sliced" color="{ficus_notch6_color}" />
+                        <label  depth="3" pos="14,-14" font_size="18" pivot="center" justify="center" text="6" color="{ficus_notch6_lcolor}" />
+                    </rect>
+                    <rect pos="166,-1" width="28" height="16">
+                        <sprite depth="2" pos="14,-3" width="2" height="10" type="sliced" color="{ficus_notch7_color}" />
+                        <label  depth="3" pos="14,-14" font_size="18" pivot="center" justify="center" text="7" color="{ficus_notch7_lcolor}" />
+                    </rect>
+                </rect>
+
+                <!-- HOUR / GS / LS stat row -->
+                <rect pos="0,-56" width="194" height="30">
+                    <rect pos="0,0" width="64" height="30">
+                        <label pos="0,-2"  width="64" font_size="18" color="160,145,110,180" text="HOUR" justify="left" />
+                        <label pos="0,-20" width="64" font_size="26" color="220,210,190,255" text="{ficus_worldhour}" justify="left" />
+                    </rect>
+                    <rect pos="68,0" width="58" height="30">
+                        <label pos="29,-2"  font_size="18" color="160,145,110,180" text="GS" justify="center" pivot="center" />
+                        <label pos="29,-20" font_size="26" color="220,210,190,255" text="{ficus_gamestage}" justify="center" pivot="center" />
+                    </rect>
+                    <rect pos="130,0" width="64" height="30">
+                        <label pos="64,-2"  font_size="18" color="160,145,110,180" text="LS" justify="right" pivot="topright" />
+                        <label pos="64,-20" font_size="26" color="220,210,190,255" text="{ficus_lootstage}" justify="right" pivot="topright" />
+                    </rect>
+                </rect>
+
+                <!-- XP bar — Ficus_xpFill CVar (stubbed 0.5 until dnSpy research) -->
+                <rect pos="0,-90" width="194" height="6">
+                    <sprite depth="1" width="194" height="6"
+                            color="40,30,15,200" sprite="menu_empty" type="sliced" />
+                    <filledsprite depth="2" width="194" height="6"
+                                  color="180,160,120,200" fill="{cvar(Ficus_xpFill)}"
+                                  type="filled" sprite="menu_empty" />
+                </rect>
+
+            </rect>
+        </rect>
+
+        <!-- ─────────────────────────────────────────────────────────
+             ROW 2 — Buff List (starts 10px below top section)
+             active_buff_entry is the vanilla template from controls.xml.
+             Each entry carries its own background sprite.
+             ───────────────────────────────────────────────────────── -->
+        <rect name="buff_list" pos="0,-100">
+            <grid name="buffs" rows="8" cols="1" width="290"
+                  cell_width="290" cell_height="44"
+                  repeat_content="true" arrangement="vertical"
+                  controller="ActiveBuffList">
+                <active_buff_entry />
+            </grid>
+        </rect>
+
+    </window>
+</append>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     CENTER BOTTOM — Vitals: HP / SP / Food / Water / Storm stub
+     
+     CRITICAL RULE: Each HUDStatBar stat_type gets its own <rect>.
+     Nesting a stat controller inside another stat controller breaks both.
+     
+     Window layout (width=590, anchor=CenterBottom, pos="0,165"):
+       x=0..240    food mini + HP bar (fills L to R)
+       x=245..345  storm stub (center)
+       x=350..590  water mini + SP bar (fills R to L via flip="Horizontally")
+     
+     Y layout (0 = window top, negative Y goes down):
+       Y=0    food/water mini bars (20px)
+       Y=-24  HP/SP main bars (32px)
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<append xpath="/windows">
+    <window name="ficusHUDVitals" depth="2" anchor="CenterBottom" pos="0,165"
+            open_on_startup="true">
+
+        <!-- FOOD mini bar — top, left half, fills left to right -->
+        <rect pos="0,0" width="240" height="20"
+              controller="HUDStatBar" stat_type="Food" visible="{statvisible}">
+            <sprite depth="1" width="240" height="20"
+                    color="60,78,24,120" sprite="menu_empty" type="sliced" />
+            <filledsprite depth="2" name="BarContent" width="240" height="20"
+                          color="107,139,42,215" fill="{statfill}"
+                          type="filled" sprite="menu_empty" />
+            <label depth="3" pos="4,-2" width="232" height="16" font_size="16"
+                   color="220,220,220,210" text="{statcurrentwithmax}" justify="left" />
+        </rect>
+
+        <!-- WATER mini bar — top, right half, fills right to left -->
+        <rect pos="350,0" width="240" height="20"
+              controller="HUDStatBar" stat_type="Water" visible="{statvisible}">
+            <sprite depth="1" width="240" height="20"
+                    color="24,60,78,120" sprite="menu_empty" type="sliced" />
+            <filledsprite depth="2" name="BarContent" width="240" height="20"
+                          color="42,107,139,215" fill="{statfill}" flip="Horizontally" fillInvert="true"
+                          type="filled" sprite="menu_empty" />
+            <label depth="3" pos="-4,-2" width="232" height="16" font_size="16"
+                   color="220,220,220,210" text="{statcurrentwithmax}"
+                   justify="right" pivot="topright" />
+        </rect>
+
+        <!-- HP bar — bottom, left half, fills left to right -->
+        <rect pos="0,-24" width="240" height="32"
+              controller="HUDStatBar" stat_type="Health" visible="{statvisible}">
+            <!-- Modified-max overlay (shows reduced HP ceiling from debuffs) -->
+            <filledsprite depth="1" name="BarMax" width="240" height="32"
+                          color="55,16,16,200" fill="{statmodifiedmax}"
+                          type="filled" sprite="menu_empty" />
+            <!-- HP fill -->
+            <filledsprite depth="2" name="BarContent" width="240" height="32"
+                          color="160,48,48,215" fill="{statfill}"
+                          type="filled" sprite="menu_empty" />
+            <label depth="3" pos="6,-8" font_size="24" color="255,255,255,220"
+                   text="{statcurrentwithmax}" justify="left" />
+        </rect>
+
+        <!-- SP bar — bottom, right half, fills right to left -->
+        <rect pos="350,-24" width="240" height="32"
+              controller="HUDStatBar" stat_type="Stamina" visible="{statvisible}">
+            <!-- Modified-max overlay -->
+            <filledsprite depth="1" name="BarMax" width="240" height="32"
+                          color="16,40,55,200" fill="{statmodifiedmax}" flip="Horizontally" fillInvert="true"
+                          type="filled" sprite="menu_empty" />
+            <!-- SP fill -->
+            <filledsprite depth="2" name="BarContent" width="240" height="32"
+                          color="46,106,160,215" fill="{statfill}" flip="Horizontally" fillInvert="true"
+                          type="filled" sprite="menu_empty" />
+            <label depth="3" pos="-6,-8" width="240" font_size="24" color="255,255,255,220"
+                   text="{statcurrentwithmax}" justify="right" pivot="topright" />
+        </rect>
+
+        <!-- STORM stub — center gap
+             Full implementation TODO: research WeatherManager.Instance in dnSpy.
+             Look for: current weather preset name, storm duration, storm remaining time.
+             CVars needed: Ficus_stormActive, Ficus_stormTimer, Ficus_stormFill, Ficus_stormName -->
+        <rect pos="245,0" width="100" height="56">
+            <sprite depth="1" width="100" height="56"
+                    color="0,0,0,60" sprite="menu_empty" type="sliced" />
+            <!-- Arc ring (shows fill from Ficus_stormActive — 0 = empty ring for now) -->
+            <sprite depth="2" pos="50,-28" pivot="center" size="42,42"
+                    sprite="ui_game_filled_circle"
+                    color="180,100,50,30" />
+            <filledsprite depth="3" pos="50,-28" pivot="center" size="42,42"
+                          sprite="ui_game_filled_circle"
+                          color="180,100,50,160"
+                          type="filled" fill="{cvar(Ficus_stormActive)}"
+                          filldirection="radial360" />
+            <!-- Center icon placeholder -->
+            <sprite depth="4" pos="50,-28" pivot="center" size="20,20"
+                    sprite="ui_game_symbol_cloud" color="200,130,60,180" />
+            <!-- Timer display (shows 0 until CVars are live) -->
+            <label depth="5" pos="50,-50" pivot="center" font_size="15"
+                   color="200,120,50,200" text="{cvar(Ficus_stormTimer)}m"
+                   justify="center" />
+        </rect>
+
+    </window>
+</append>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BOTTOM RIGHT — Active Item Widget (standalone)
+     
+     Vanilla bindings from HUDStatBar stat_type="ActiveItem":
+       {statvisible}       show/hide when item in hand
+       {statcurrent}       current magazine ammo count
+       {statmax}           reserve ammo count
+       {statfill}          magazine fill ratio 0.0-1.0
+       {statimage|once}    item background/portrait sprite
+       {staticon}          ammo type icon sprite
+       {staticonatlas|once} atlas for staticon
+       {staticoncolor}     ammo icon tint
+     
+     Stubs (require C# additions in InfoPanel):
+       {ficus_activeItemName}     — item display name (empty until dnSpy)
+       {ficus_activeItemDurColor} — durability-based color (grey until dnSpy)
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Remove vanilla ActiveItem from HUDRightStatBars to avoid double display -->
+<remove xpath="/windows/window[@name='HUDRightStatBars']/grid/rect[@stat_type='ActiveItem']" />
+
+<append xpath="/windows">
+    <window name="ficusItemWidget" depth="2" anchor="RightBottom"
+            pos="-220,90" open_on_startup="true">
+
+        <rect name="item_bg" pos="0,0" width="210" height="80"
+              controller="HUDStatBar" stat_type="ActiveItem" visible="{statvisible}">
+
+            <!-- Background -->
+            <sprite depth="1" width="210" height="80"
+                    color="0,0,0,110" sprite="menu_empty" type="sliced" />
+
+            <!-- Left accent line — durability color (stubbed grey) -->
+            <sprite depth="2" pos="0,0" width="3" height="80"
+                    color="{ficus_activeItemDurColor}"
+                    sprite="menu_empty" type="sliced" />
+
+            <!-- Item portrait — right side, large -->
+            <sprite depth="3" name="ItemImage" pos="207,-2" width="80" height="80"
+                    sprite="{statimage|once}" pivot="topright" />
+
+            <!-- Current ammo — large, top-left -->
+            <label depth="4" name="TextContent" pos="8,-6" font_size="30"
+                   color="220,210,190,245" text="{statcurrent}" justify="left" />
+
+            <!-- Reserve ammo — small, below -->
+            <label depth="4" pos="8,-40" font_size="18"
+                   color="120,110,85,200" text="/ {statmax}" justify="left" />
+
+            <!-- Ammo type icon -->
+            <sprite depth="5" name="AmmoIcon" pos="55,-42" size="18,18"
+                    atlas="{staticonatlas|once}" sprite="{staticon}"
+                    color="{staticoncolor}" foregroundlayer="true" />
+
+            <!-- Item name strip — bottom (stub: empty string until C# added) -->
+            <rect name="name_bar" pos="0,-62" width="128" height="18">
+                <sprite depth="1" width="128" height="18"
+                        color="0,0,0,130" sprite="menu_empty" type="sliced" />
+                <label depth="2" pos="5,-1" width="120" font_size="16"
+                       color="220,210,190,180" text="{ficus_activeItemName}"
+                       justify="left" overflow="ShrinkContent" />
+            </rect>
+
+            <!-- Ammo bar — thin line at bottom -->
+            <sprite depth="1" pos="3,-75" width="204" height="4"
+                    color="30,30,30,160" sprite="menu_empty" type="sliced" />
+            <filledsprite depth="2" pos="3,-75" width="204" height="4"
+                          color="180,160,120,200" fill="{statfill}"
+                          type="filled" sprite="menu_empty" />
+
+        </rect>
+    </window>
+</append>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     BOTTOM LEFT — Party / Companion Widget
+     
+     anchor="LeftTop" pos="10,-450": entries run from y=450 to y=670 on
+     the 720-unit XUi viewport. For 2-5 active party members this places
+     bars neatly in the lower-left above the hotbar area.
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<remove xpath="/windows/window[@name='windowGroupBars']" />
+
+<append xpath="/windows">
+    <window name="windowGroupBars" depth="-20" anchor="LeftTop" pos="10,-450"
+            open_on_startup="true" controller="PartyWindow">
+
+        <grid name="party_grid" pos="0,0" rows="7" cols="1"
+              cell_width="210" cell_height="44"
+              side="left" repeat_content="true"
+              controller="PartyEntryList">
+            <ficus_party_entry width="210" height="42" />
+        </grid>
+
+        <grid name="companion_grid" pos="0,-308" rows="4" cols="1"
+              cell_width="210" cell_height="44"
+              side="left" repeat_content="true"
+              controller="CompanionEntryList">
+            <ficus_party_entry width="210" height="42" />
+        </grid>
+
+    </window>
+</append>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TOP CENTER — Compass / Location / Target Bar
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<!-- Remove redundant day/time/temp line (already shown in TL panel) -->
+<remove xpath="/windows/window[@name='windowCompass']/sprite[@pos='240,-60']" />
+
+<!-- Location: center, below compass -->
+<setattribute xpath="/windows/window[@name='windowLocation']" name="anchor">CenterTop</setattribute>
+<setattribute xpath="/windows/window[@name='windowLocation']" name="pos">-120,-54</setattribute>
+
+<!-- Target bar: center-top -->
+<setattribute xpath="/windows/window[@name='windowTargetBar']" name="anchor">CenterTop</setattribute>
+
+
+<!-- ═══════════════════════════════════════════════════════════════════════
+     TOP RIGHT — Quest / Recipe Tracker
+     ═══════════════════════════════════════════════════════════════════════ -->
+
+<setattribute xpath="/windows/window[@name='windowQuestTracker']"  name="anchor">RightTop</setattribute>
+<setattribute xpath="/windows/window[@name='windowRecipeTracker']" name="anchor">RightTop</setattribute>
+
+
+</FicusHUD>

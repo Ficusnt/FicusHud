@@ -1,0 +1,104 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{37557276-2AE4-4515-BF9B-0E8FB9BDBD52}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>SMXcore</RootNamespace>
+    <AssemblyName>SMXcore</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony" />
+    <Reference Include="Assembly-CSharp">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="GearsAPI" />
+    <Reference Include="InControl">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\InControl.dll</HintPath>
+    </Reference>
+    <Reference Include="LogLibrary">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\LogLibrary.dll</HintPath>
+    </Reference>
+    <Reference Include="NGUI">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\NGUI.dll</HintPath>
+    </Reference>
+    <Reference Include="Quartz" />
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="HarmonyPatches\BindingInfo_Harmony.cs" />
+    <Compile Include="HarmonyPatches\EntityVehicle_Patch.cs" />
+    <Compile Include="HarmonyPatches\ItemActionEntryShowPerk_Patch.cs" />
+    <Compile Include="HarmonyPatches\SMXHarmonyPatcher.cs" />
+    <Compile Include="HarmonyPatches\XUiC_MapInvitesListEntry_Patch.cs" />
+    <Compile Include="HarmonyPatches\XUiC_MapWaypointListEntry_Patch.cs" />
+    <Compile Include="HarmonyPatches\XUiC_PartList_Patch.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="SMXcoreMod.cs" />
+    <Compile Include="SMXSettings.cs" />
+    <Compile Include="XUiC_ActiveBuffEntry.cs" />
+    <Compile Include="XUiC_AttributeSkillEntry.cs" />
+    <Compile Include="XUiC_BloodMoon.cs" />
+    <Compile Include="XUiC_BookList.cs" />
+    <Compile Include="XUiC_BookSkillEntry.cs" />
+    <Compile Include="XUiC_CraftingSkillEntry.cs" />
+    <Compile Include="XUiC_CraftingSkillList.cs" />
+    <Compile Include="XUiC_HUDActiveItem.cs" />
+    <Compile Include="XUiC_HUDStatBar.cs" />
+    <Compile Include="XUiC_ItemActionEntry.cs" />
+    <Compile Include="XUiC_ItemCosmeticStack.cs" />
+    <Compile Include="XUiC_ItemDronePartStack.cs" />
+    <Compile Include="XUiC_ItemPartStack.cs" />
+    <Compile Include="XUiC_MapInvitesListEntry.cs" />
+    <Compile Include="XUiC_MapPopupEntry.cs" />
+    <Compile Include="XUiC_MapPopupList.cs" />
+    <Compile Include="XUiC_MapSubPopupEntry.cs" />
+    <Compile Include="XUiC_MapSubPopupList.cs" />
+    <Compile Include="XUiC_MapWaypointListEntry.cs" />
+    <Compile Include="XUiC_PartList.cs" />
+    <Compile Include="XUiC_PerkSkillEntry.cs" />
+    <Compile Include="XUiC_PlayerStatWindow.cs" />
+    <Compile Include="XUiC_SkillAttributeInfoWindow.cs" />
+    <Compile Include="XUiC_SkillBookInfoWindow.cs" />
+    <Compile Include="XUiC_SkillCategoryEntry.cs" />
+    <Compile Include="XUiC_SkillCategoryList.cs" />
+    <Compile Include="XUiC_SkillCraftingInfoWindow.cs" />
+    <Compile Include="XUiC_SkillList.cs" />
+    <Compile Include="XUiC_SkillListWindow.cs" />
+    <Compile Include="XUiC_SkillPerkInfoWindow.cs" />
+    <Compile Include="XUiC_SkillWindowGroup.cs" />
+    <Compile Include="XUiC_TargetBar.cs" />
+    <Compile Include="XUiC_ToolbeltXP.cs" />
+    <Compile Include="XUiC_TraderItemEntry.cs" />
+    <Compile Include="XUiC_VehiclePartStack.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

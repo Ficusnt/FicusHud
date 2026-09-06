@@ -1,0 +1,112 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{7BDA11CF-0C5A-4160-8AA2-C2C685F9D809}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Views</RootNamespace>
+    <AssemblyName>CATUI</AssemblyName>
+    <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony" />
+    <Reference Include="Assembly-CSharp">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\Assembly-CSharp.dll</HintPath>
+    </Reference>
+    <Reference Include="NGUI">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\NGUI.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Core">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\System.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Xml.Linq">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\System.Xml.Linq.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.AudioModule">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.AudioModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.InputLegacyModule">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.InputLegacyModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.PhysicsModule">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.PhysicsModule.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine.VideoModule">
+      <HintPath>X:\Steam\steamapps\common\7 Days To Die\7DaysToDie_Data\Managed\UnityEngine.VideoModule.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CATUI.cs" />
+    <Compile Include="ModStartup.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UIScrollBar.cs" />
+    <Compile Include="XUiC_CATUI_Hover.cs" />
+    <Compile Include="XUiC_CompanionEntryListPatch.cs" />
+    <Compile Include="XUiC_CompassWindowPatch.cs" />
+    <Compile Include="XUiC_CraftingInfoWindowPatch.cs" />
+    <Compile Include="XUiC_CraftingQueuePatch.cs" />
+    <Compile Include="XUiC_EquipmentStackPatch.cs" />
+    <Compile Include="XUiC_HUDStatBarPatch.cs" />
+    <Compile Include="XUiC_IngredientEntryPatch.cs" />
+    <Compile Include="XUiC_ItemInfoWindowPatch.cs" />
+    <Compile Include="XUiC_ItemStackPatch.cs" />
+    <Compile Include="XUiC_PartyEntryPatch.cs" />
+    <Compile Include="XUiC_PartyWindowPatch.cs" />
+    <Compile Include="XUiC_QuestTrackerWindowPatch.cs" />
+    <Compile Include="XUiC_RecipeListPatch.cs" />
+    <Compile Include="XUiC_RecipeTrackerIngredientEntryPatch.cs" />
+    <Compile Include="XUiC_RecipeTrackerWindowPatch.cs" />
+    <Compile Include="XUiC_ScrollBar_Button.cs" />
+    <Compile Include="XUiC_Scrollbar_Sprite.cs" />
+    <Compile Include="XUiC_SkillAttributeLevelPatch.cs" />
+    <Compile Include="XUiC_SkillBookLevelPatch.cs" />
+    <Compile Include="XUiC_SkillCraftingInfoEntryPatch.cs" />
+    <Compile Include="XUiC_SkillCraftingInfoWindowPatch.cs" />
+    <Compile Include="XUiC_SkillEntryPatch.cs" />
+    <Compile Include="XUiC_SkillListPatch.cs" />
+    <Compile Include="XUiC_SkillPerkInfoWindowPatch.cs" />
+    <Compile Include="XUiC_SkillPerkLevelPatch.cs" />
+    <Compile Include="XUiC_TargetBarPatch.cs" />
+    <Compile Include="XUiC_TraderItemEntryPatch.cs" />
+    <Compile Include="XUiFromXmlPatch.cs" />
+    <Compile Include="XUiFromXmlReversePatch.cs" />
+    <Compile Include="XUiUpdaterPatch.cs" />
+    <Compile Include="XUiViewPatch.cs" />
+    <Compile Include="XUiV_AnimatedSprite.cs" />
+    <Compile Include="XUiV_ScrollBar.cs" />
+    <Compile Include="XUiV_ScrollView.cs" />
+    <Compile Include="XUiV_ScrollViewContainer.cs" />
+    <Compile Include="XUiV_VideoPlayer.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+</Project>

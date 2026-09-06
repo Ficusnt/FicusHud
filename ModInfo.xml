@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<xml>
+    <Name value="FicusHUD" />
+    <DisplayName value="FicusHUD" />
+    <Version value="0.1.0" />
+    <Description value="A custom HUD for 7 Days to Die." />
+    <Author value="Ficus" />
+    <Website value="" />
+</xml>
